@@ -12,11 +12,12 @@ class Test_GraphLoading(unittest.TestCase):
         #### refaire les test là c'est ceux d'un autre test pour l'instant
         self.assertEqual(g.nb_nodes, 10)
         self.assertEqual(g.nb_edges, 4)
-        self.assertEqual(g.graph[1][0][2], 6) # Cette ligne teste l'importation de dist
-        self.assertEqual(g.graph[2][0][2], 3) # Cette ligne teste l'importation de dist
-        self.assertEqual(g.graph[3][1][2], 2) # Cette ligne teste l'importation de dist
-        self.assertEqual(g.graph[1][0][2], 6) # Cette ligne teste l'importation de dist
-        self.assertEqual(g.graph[2][1][2], 89) # Cette ligne teste l'importation de dist
+        self.assertEqual(g.graph[1][0][2], 6) # This line test the importation of dist
+        self.assertEqual(g.graph[2][0][2], 3) # This line test the importation of dist
+        self.assertEqual(g.graph[3][1][2], 2) # This line test the importation of dist
+        self.assertEqual(g.graph[1][0][2], 6) # This line test the importation of dist
+        self.assertEqual(g.graph[2][1][2], 89) # This line test the importation of dist
 
+        
 if __name__ == '__main__':
     unittest.main()
