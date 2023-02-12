@@ -164,7 +164,7 @@ class Graph:
             pile.remove((node_power, node))
             for end_node in self.graph[node]:
                 end_node, power_between, _ = end_node
-                if power_dict[end_node] is None or max(power_between, power_dict[node]) < power_dict[end_node]: # Test if found a better dist
+                if power_dict[end_node] is None or max(power_between, power_dict[node]) < power_dict[end_node]: # Test if found a better power
                     power_dict[end_node] = max(power_between, power_dict[node])
                     prev[end_node] = node
                     pile.append((power_dict[end_node], end_node))
@@ -179,8 +179,8 @@ class Graph:
                 middle = prev[middle]
                 path.append(middle)
             path = path[::-1]
-            return path
-        return None
+            return path, found_power
+        return None, None
 
 
 def graph_from_file(filename): # complexity : O(number of line)
