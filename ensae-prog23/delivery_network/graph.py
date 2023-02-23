@@ -37,7 +37,8 @@ class Graph:
         self.graph[node2].append((node1, power_min, dist))
     
 
-    def get_path_with_power(self, src, dest, power): # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case
+    def get_path_with_power(self, src, dest, power): 
+        # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case
         # O(nb_nodes) in best case
         """
         We first search if src and dest are in the same connected_component 
@@ -56,39 +57,27 @@ class Graph:
 
         power_dict = {node:None for node in component}
         power_dict[src] = 0
-        prev = {node:None for node in component}
+        path = {node:[] for node in component}
+        path[src] = [src]
         dist_dict = {node:None for node in component}
         dist_dict[src] = 0
-        min_dist = 0
-        found_dist = None
         pile = [(0, src)]
-        while pile != [] and (found_dist is None or min_dist < found_dist): # Djikstras on dist
+        while pile != []: # Djikstras on dist
             """in this part we use the Djikstra algorithm on the dist with the condition on power
             It is like removing all edges with too big power required
             """
             node_dist, node = min(pile)
-            min_dist = node_dist
             pile.remove((node_dist, node))
+            if node == dest: # Test if reached dest
+                return path[dest]
             for end_node in self.graph[node]:
                 end_node, power_between, dist_between = end_node
                 if power_between <= power: # Test if has enough power
                     if power_dict[end_node] is None or dist_between + dist_dict[node] < dist_dict[end_node]: # Test if found a better dist
                         power_dict[end_node] = max(power_between, power_dict[node])
                         dist_dict[end_node] = dist_between + dist_dict[node]
-                        prev[end_node] = node
+                        path[end_node] = path[node] + [end_node]
                         pile.append((dist_dict[end_node], end_node))
-                if end_node == dest: # Test if reached dest
-                    if power_dict[end_node] is not None and power_dict[end_node]<=power:
-                        found_dist = dist_dict[end_node]
-
-        if found_dist is not None:
-            middle = dest
-            path = [dest]
-            while middle != src:
-                middle = prev[middle]
-                path.append(middle)
-            path = path[::-1]
-            return path
         return None
         
         
@@ -121,7 +110,6 @@ class Graph:
         The result should be a set of frozensets (one per component), 
         For instance, for network01.in: {frozenset({1, 2, 3}), frozenset({4, 5, 6, 7})}
         """
-        
         return set(map(frozenset, self.connected_components()))
     
     def min_power(self, src, dest):
@@ -131,14 +119,14 @@ class Graph:
         # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case O(nb_nodes) in best case
         """
         The indication in the instruction recommend to use 
-        self.get_path_with_power with a dichotomy research thus doing it nlog(n) times
+        self.get_path_with_power with a dichotomy research thus doing it nlog(n) times ending with O(nlog(n)(nb_nodes + nb_edges log(nb_edges)))
 
         We think that modifying Djikstra with the condition 
             max(power_between, power_dict[node]) < power_dict[node]
             rather than dist_between + dist_dict[node] < dist_dict[end_node]
         can end up with the same result 
 
-        And it will be bette in complexity because executing Djikstra only once rather than nlog(n)
+        And it will be better in complexity because executing Djikstra ending with O(nb_nodes + nb_edges log(nb_edges))
         """
         connected = self.connected_components_set()
         component = set()
@@ -152,34 +140,23 @@ class Graph:
 
         power_dict = {node:None for node in component}
         power_dict[src] = 0
-        prev = {node:None for node in component}
-        min_power = 0
-        found_power = None
+        path = {node:[] for node in component}
+        path[src] = [src]
         pile = [(0, src)]
-        while pile != [] and (found_power is None or min_power < found_power): # Djikstras on max power
+        while pile != []: # Djikstras on max power
             """in this part we use the principle of Djikstra algorithm
             """
             node_power, node = min(pile)
-            min_power = node_power
             pile.remove((node_power, node))
+            if node == dest: # Test if reached dest
+                return path[dest], node_power
             for end_node in self.graph[node]:
                 end_node, power_between, _ = end_node
                 if power_dict[end_node] is None or max(power_between, power_dict[node]) < power_dict[end_node]: # Test if found a better power
                     power_dict[end_node] = max(power_between, power_dict[node])
-                    prev[end_node] = node
+                    path[end_node] = path[node] + [end_node]
                     pile.append((power_dict[end_node], end_node))
-                if end_node == dest: # Test if reached dest
-                    if power_dict[end_node] is not None:
-                        found_power = power_dict[end_node]
-
-        if found_power is not None:
-            middle = dest
-            path = [dest]
-            while middle != src:
-                middle = prev[middle]
-                path.append(middle)
-            path = path[::-1]
-            return path, found_power
+                    
         return None, None
 
 
