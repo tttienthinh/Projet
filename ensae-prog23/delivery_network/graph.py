@@ -219,6 +219,31 @@ def graph_from_file(filename): # complexity : O(number of line)
             # Grace à l'étoilé, on prend en compte dist qui peut, ou non être présent
     return G
 
+def kruskal(G):
+    n = G.nb_nodes
+    A = Graph(G.nodes)
+    vertices_list = []
+    for node1 in G.nodes:
+        for node2, power, dist in G.graph[node1]:
+            vertices_list.append((power, dist, node1, node2))
+    visited_nodes = {node: False for node in G.nodes}
+    nb_visited = 0
+    while nb_visited < G.nb_nodes and vertices_list != []:
+        print(vertices_list)
+        data = min(vertices_list)
+        vertices_list.remove(data)
+        power, dist, node1, node2 = data
+        if (not visited_nodes[node1]) and (not visited_nodes[node2]): # Otherwise it is a cycle
+            A.add_edge(node1, node2, power, dist)
+            if not visited_nodes[node1]:
+                visited_nodes[node1] = True
+                nb_visited += 1
+            if not visited_nodes[node2]:
+                visited_nodes[node2] = True
+                nb_visited += 1
+    return A
+
+
 if __name__ == "__main__":
     g = graph_from_file("input/network.04.in")
     g.connected_components()
