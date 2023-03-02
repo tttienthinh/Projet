@@ -2,12 +2,12 @@
 import sys 
 sys.path.append("delivery_network")
 
-from graph import graph_from_file
+from graph import Graph
 import unittest   # The test framework
 
 class Test_MinimalPower(unittest.TestCase):
     def test_network1(self):
-        g = graph_from_file("input/network.1.in")
+        g = Graph.graph_from_file("input/network.1.in")
         self.assertEqual(g.graph[1][0][0], 2)
         self.assertEqual(g.graph[1][0][1], 2)
         self.assertEqual(g.graph[1][0][2], 6312)
@@ -16,7 +16,7 @@ class Test_MinimalPower(unittest.TestCase):
         self.assertEqual(g.graph[2][1][2], 6891)
 
     def test_network9(self):
-        g = graph_from_file("input/network.9.in")
+        g = Graph.graph_from_file("input/network.9.in")
         self.assertEqual(g.graph[1][0][0], 2)
         self.assertEqual(g.graph[1][0][1], 10000)
         self.assertEqual(g.graph[1][0][2], 6630)

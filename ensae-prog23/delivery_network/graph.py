@@ -180,6 +180,11 @@ class Graph:
         dot.render(f'doctest-output/{comment}.gv', view=view)
 
     def kruskal_aime(self):
+        """firstly we divide the problem between all the connex parts of the graph (because kruskal algorithm is
+        designed for connex graphs)"""
+        to_treat = self.connected_components_set()
+        for connex_part in to_treat:
+            set_som = []
         return 1
 
     @staticmethod
