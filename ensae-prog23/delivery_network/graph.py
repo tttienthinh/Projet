@@ -185,10 +185,33 @@ class Graph:
         to_treat = self.connected_components_set()
         result = []
         for connex_part in to_treat:
-            set_som = []
+            set_som = [{node} for node in connex_part]
+            '''here we organise the edges by ascending dist'''
+            queue = []
             for node in connex_part:
-                set_som.append(Graph([node]))
-        return 1
+                interm = self.graph[node]
+                for elt in interm:
+                    queue += [(node, elt[i] for i in [0, 1, 2])]
+            queue = sorted(queue, key=lambda x: x[2])
+            final_vertices = []
+            '''here we apply the principle of kruskal algorithm'''
+            while len(set_som) > 1:
+                vertex = queue[0]
+                queue.pop(0)
+                for i in range(len(set_som)):
+                    for j in range(len(set_som)):
+                        if i != j and vertex[0] in set_som[i] and vertex[1] in set_som[j] and not set_som[i].intersection(set_som[j]) :
+                            temp1, temp2 = set_som[i], set_som[j]
+                            set_som.pop(max(i, j))
+                            set_som.pop(min(i, j))
+                            set_som.append(temp1.union(temp2))
+                            final_vertices.append(vertex)
+            '''here we generate the graph with the result'''
+            to_append = Graph([list(set_som)])
+            for elt in final_vertices:
+                to_append.add_edge(elt[i] for i in range(len(elt)))
+            result.append(to_append)
+        return result
 
     @staticmethod
     def graph_from_file(filename): # complexity : O(number of line)
