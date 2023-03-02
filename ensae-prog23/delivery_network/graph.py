@@ -183,8 +183,11 @@ class Graph:
         """firstly we divide the problem between all the connex parts of the graph (because kruskal algorithm is
         designed for connex graphs)"""
         to_treat = self.connected_components_set()
+        result = []
         for connex_part in to_treat:
             set_som = []
+            for node in connex_part:
+                set_som.append(Graph([node]))
         return 1
 
     @staticmethod
