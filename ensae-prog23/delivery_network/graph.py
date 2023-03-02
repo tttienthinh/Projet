@@ -1,6 +1,9 @@
 import graphviz
 import sys
 
+'''In the following, we assume that when we give a complexity we won't put the multiplicative constant of complexity, 
+for example if we use a function containing 2 for loop of size n we will indicate a complexity O(n) instead of O(2n)'''
+
 class Graph:
     def __init__(self, nodes=[]):
         self.nodes = nodes
@@ -122,7 +125,7 @@ class Graph:
         """
         Should return path, min_power. 
         """
-        # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case O(nb_nodes) in best case
+        # complexity : O(nb_nodes + nb_edges * log(nb_edges)) in worst case O(nb_nodes) in best case
         """
         The indication in the instruction recommend to use 
         self.get_path_with_power with a dichotomy research thus doing it nlog(n) times ending with O(nlog(n)(nb_nodes + nb_edges log(nb_edges)))
