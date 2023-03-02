@@ -179,49 +179,53 @@ class Graph:
                     dot.edge(str(source), str(destination), label=f'{power}, {dist}')
         dot.render(f'doctest-output/{comment}.gv', view=view)
 
+    def kruskal_aime(self):
+        return 1
 
-def graph_from_file(filename): # complexity : O(number of line)
-    """
-    Reads a text file and returns the graph as an object of the Graph class.
+    @staticmethod
+    def graph_from_file(filename): # complexity : O(number of line)
+        """
+        Reads a text file and returns the graph as an object of the Graph class.
 
-    The file should have the following format: 
-        The first line of the file is 'n m'
-        The next m lines have 'node1 node2 power_min dist' or 'node1 node2 power_min' (if dist is missing, it will be set to 1 by default)
-        The nodes (node1, node2) should be named 1..n
-        All values are integers.
+        The file should have the following format:
+            The first line of the file is 'n m'
+            The next m lines have 'node1 node2 power_min dist' or 'node1 node2 power_min' (if dist is missing, it will be set to 1 by default)
+            The nodes (node1, node2) should be named 1..n
+            All values are integers.
 
-    Parameters: 
-    -----------
-    filename: str
-        The name of the file
+        Parameters:
+        -----------
+        filename: str
+            The name of the file
 
-    Outputs: 
-    -----------
-    G: Graph
-        An object of the class Graph with the graph from file_name.
-    """
-    with open(filename) as file:
-        def readline_to_listint():
-            """
-            Read the next line of file, and return this line as a list of integer
-            
-            Outputs: 
-            -----------
-            listint: list
-                A list of integer [node1, node2, power_min, (dist)].
-            """
-            listline = file.readline().split()
-            listint = [float(x) if '.' in x else int(x) for x in listline ]
-            return listint
+        Outputs:
+        -----------
+        G: Graph
+            An object of the class Graph with the graph from file_name.
+        """
+        with open(filename) as file:
+            def readline_to_listint():
+                """
+                Read the next line of file, and return this line as a list of integer
 
-        n, m = readline_to_listint()
-        nodes = [i for i in range(1, n+1)]
-        G = Graph(nodes)
-        for _ in range(m):
-            args = readline_to_listint()
-            G.add_edge(*args) 
-            # Grace à l'étoilé, on prend en compte dist qui peut, ou non être présent
-    return G
+                Outputs:
+                -----------
+                listint: list
+                    A list of integer [node1, node2, power_min, (dist)].
+                """
+                listline = file.readline().split()
+                listint = [float(x) if '.' in x else int(x) for x in listline ]
+                return listint
+
+            n, m = readline_to_listint()
+            nodes = [i for i in range(1, n+1)]
+            G = Graph(nodes)
+            for _ in range(m):
+                args = readline_to_listint()
+                G.add_edge(*args)
+                # Grace à l'étoilé, on prend en compte dist qui peut, ou non être présent
+        return G
+
 
 def kruskal(G):
     n = G.nb_nodes
@@ -248,8 +252,9 @@ def kruskal(G):
     return A
 
 
+
 if __name__ == "__main__":
-    g = graph_from_file("input/network.04.in")
+    g = Graph.graph_from_file("input/network.04.in")
     g.connected_components()
     g.graph
     g.get_path_with_power(1, 2, 10)
