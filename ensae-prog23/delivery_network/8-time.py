@@ -1,7 +1,10 @@
+# This will work if ran from the root folder.
+import sys 
+sys.path.append("delivery_network")
+
 from graph import Graph, graph_from_file
 import matplotlib.pyplot as plt 
 import time
-
 data_path = "input/"
 functions_to_tests = [ # name of the function to test and arguments
     ("connected_components", {}), 
@@ -24,7 +27,7 @@ plt.grid()
 plt.xlabel("network.X.in")
 plt.ylabel("Execution time in seconds")
 plt.legend()
-plt.savefig("delivery_network/8-time_result.png")
+plt.savefig("delivery_network/test_s2q1_result.png")
 
 # Every functions is executing on the network.X.in within 0.6 sec
 

@@ -43,27 +43,11 @@ class Graph:
 
     def get_path_with_power(self, src, dest, power): 
         # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case
-        # O(nb_nodes) in best case
-        """
-        We first search if src and dest are in the same connected_component 
-        to restrain the set of node where we have to search 
-        We can now lower the space complexity of power_dict and dist_dict
-        """
-        connected = self.connected_components_set()
-        component = set()
-        for elt in connected:
-            if src in elt:
-                if dest in elt:
-                    component = elt
-                    pass
-                else:
-                    return None
-
-        power_dict = {node:None for node in component}
+        power_dict = {node:None for node in self.nodes}
         power_dict[src] = 0
-        path = {node:[] for node in component}
+        path = {node:[] for node in self.nodes}
         path[src] = [src]
-        dist_dict = {node:None for node in component}
+        dist_dict = {node:None for node in self.nodes}
         dist_dict[src] = 0
         pile = [(0, src)]
         while pile != []: # Djikstras on dist
@@ -134,19 +118,9 @@ class Graph:
 
         And it will be better in complexity because executing Djikstra ending with O(nb_nodes + nb_edges log(nb_edges))
         """
-        connected = self.connected_components_set()
-        component = set()
-        for elt in connected:
-            if src in elt:
-                if dest in elt:
-                    component = elt
-                    pass
-                else:
-                    return None
-
-        power_dict = {node:None for node in component}
+        power_dict = {node:None for node in self.nodes}
         power_dict[src] = 0
-        path = {node:[] for node in component}
+        path = {node:[] for node in self.nodes}
         path[src] = [src]
         pile = [(0, src)]
         while pile != []: # Djikstras on max power

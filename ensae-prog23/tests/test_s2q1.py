@@ -1,3 +1,7 @@
+# This will work if ran from the root folder.
+import sys 
+sys.path.append("delivery_network")
+
 from graph import Graph, graph_from_file
 import matplotlib.pyplot as plt 
 import time
@@ -5,7 +9,7 @@ import time
 def route_from_file(filename):
     with open(filename) as file:
         nb_route = int(file.readline())
-        routes = [map(int, file.readline().split()) for _ in range(nb_route)]
+        routes = [list(map(int, file.readline().split())) for _ in range(nb_route)]
         return routes
 
 
