@@ -183,7 +183,7 @@ class Graph:
         """firstly we divide the problem between all the connex parts of the graph (because kruskal algorithm is
         designed for connex graphs)"""
         to_treat = self.connected_components_set()
-        result = []
+        result = Graph(self.nodes)
         for connex_part in to_treat:
             set_som = [{node} for node in connex_part]
             '''here we organise the edges by ascending dist'''
@@ -191,7 +191,7 @@ class Graph:
             for node in connex_part:
                 interm = self.graph[node]
                 for elt in interm:
-                    queue += [(node, elt[i] for i in [0, 1, 2])]
+                    queue += [(node, elt[0], elt[1], elt[2])]
             queue = sorted(queue, key=lambda x: x[2])
             final_vertices = []
             '''here we apply the principle of kruskal algorithm'''
@@ -200,17 +200,16 @@ class Graph:
                 queue.pop(0)
                 for i in range(len(set_som)):
                     for j in range(len(set_som)):
+                        print(vertex)
                         if i != j and vertex[0] in set_som[i] and vertex[1] in set_som[j] and not set_som[i].intersection(set_som[j]) :
                             temp1, temp2 = set_som[i], set_som[j]
                             set_som.pop(max(i, j))
                             set_som.pop(min(i, j))
                             set_som.append(temp1.union(temp2))
                             final_vertices.append(vertex)
-            '''here we generate the graph with the result'''
-            to_append = Graph([list(set_som)])
+            '''here we add the vertices to the node in order to generate a tree'''
             for elt in final_vertices:
-                to_append.add_edge(elt[i] for i in range(len(elt)))
-            result.append(to_append)
+                result.add_edge(elt[i] for i in range(len(elt)))
         return result
 
     @staticmethod
@@ -285,7 +284,7 @@ def kruskal(G):
 
 
 if __name__ == "__main__":
-    g = Graph.graph_from_file("input/network.04.in")
+    g = Graph.graph_from_file("input/network.00.in")
     g.connected_components()
     g.graph
     g.get_path_with_power(1, 2, 10)
