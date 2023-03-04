@@ -174,7 +174,7 @@ class Graph:
                 if source < destination:
                     # Le premier nombre est la puissance le deuxième est la distance
                     dot.edge(str(source), str(destination), label=f'{power}, {dist}')
-        dot.render(f'doctest-output/{comment}.gv', view=view)
+        dot.render(filename=f'doctest-output/{comment}.gv', cleanup=True, view=view)
 
     def kruskal(self):
         root = {node:node for node in self.nodes}
