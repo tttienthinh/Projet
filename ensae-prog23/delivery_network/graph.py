@@ -1,5 +1,4 @@
 import graphviz
-import sys
 
 class Graph:
     def __init__(self, nodes=[]):
@@ -7,7 +6,7 @@ class Graph:
         self.graph = dict([(n, []) for n in nodes])
         self.nb_nodes = len(nodes)
         self.nb_edges = 0
-        sys.setrecursionlimit(max(self.nb_nodes*10, 1_000))
+        self.tree = None
     
 
     def __str__(self): # complexity : O(nb_edges)
@@ -42,7 +41,7 @@ class Graph:
     
 
     def get_path_with_power(self, src, dest, power): 
-        # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case
+        # complexity : O(nb_edges log(nb_edges)) in worst case
         power_dict = {node:None for node in self.nodes}
         power_dict[src] = 0
         path = {node:[] for node in self.nodes}
@@ -106,17 +105,17 @@ class Graph:
         """
         Should return path, min_power. 
         """
-        # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case O(nb_nodes) in best case
+        # complexity : O(nb_edges log(nb_edges)) in worst case O(nb_nodes) in best case
         """
         The indication in the instruction recommend to use 
-        self.get_path_with_power with a dichotomy research thus doing it nlog(n) times ending with O(nlog(n)(nb_nodes + nb_edges log(nb_edges)))
+        self.get_path_with_power with a dichotomy research thus doing it nlog(n) times ending with O(nlog(n)(nb_edges log(nb_edges)))
 
         We think that modifying Djikstra with the condition 
             max(power_between, power_dict[node]) < power_dict[node]
             rather than dist_between + dist_dict[node] < dist_dict[end_node]
         can end up with the same result 
 
-        And it will be better in complexity because executing Djikstra ending with O(nb_nodes + nb_edges log(nb_edges))
+        And it will be better in complexity because executing Djikstra ending with O(nb_edges log(nb_edges))
         """
         power_dict = {node:None for node in self.nodes}
         power_dict[src] = 0
@@ -151,6 +150,10 @@ class Graph:
         dot.render(filename=f'doctest-output/{comment}.gv', cleanup=True, view=view)
 
     def kruskal(self):
+        """
+        The complexity is O(nb_edges * (log(nb_edges) + nb_nodes))
+        """
+
         root = {node:node for node in self.nodes}
         A = Graph(self.nodes)
         vertices_list = [] # this is a list of all the vertices
@@ -161,9 +164,9 @@ class Graph:
                     vertices_list.append((power, dist, node1, node2))
                     already_added[node1].append(node2)
                     already_added[node2].append(node1)
-        vertices_list.sort() # we sort them
+        vertices_list.sort() # we sort them O(nb_edges * log(n_edges))
 
-        def union(node1, node2):
+        def union(node1, node2): # In the very worst case O(nb_nodes)
             if node1 == root[node1]: # Merging this root to node2
                 root[node1] = node2
                 return node2
@@ -177,7 +180,7 @@ class Graph:
             root[node2] = root_node
             return root_node
             
-        def search(node):
+        def search(node): # In the very worst case O(nb_nodes)
             if node==root[node]:
                 return node
             # making a compression
@@ -188,7 +191,7 @@ class Graph:
         visited_nodes = {node: False for node in self.nodes}
         nb_visited = 0
         i = 0
-        while nb_visited < self.nb_nodes and i < len(vertices_list): # creating the tree
+        while nb_visited < self.nb_nodes and i < len(vertices_list): # creating the tree in the worst case repeating nb_edges
             power, dist, node1, node2 = vertices_list[i]
             i += 1
             if (search(node1) != search(node2)): # Otherwise it is a cycle
@@ -201,6 +204,62 @@ class Graph:
                     visited_nodes[node2] = True
                     nb_visited += 1
         return A
+    
+    def oriented_tree(self):
+        """
+        The complexity is O(nb_nodes) we are visiting every nodes only once
+        """
+        # This fonction can only be applied to trees (You can execute kruskal before executing this one)
+
+        # We will choose the root of our tree as the node with the most neighbour
+        root = self.nodes[0]
+        max_neighbour = len(self.graph[root])
+        for node in self.nodes[1:]:
+            if len(self.graph[root]) > max_neighbour:
+                root = node
+                max_neighbour = len(self.graph[node])
+        
+        # defining the unique tree from root
+        self.tree = {node:(node, 0, 0) for node in self.nodes}
+        def tree(dad, node, level):
+            for child in self.graph[node]:
+                child, power_min, dist = child
+                if child != dad:
+                    self.tree[child] = (node, level, power_min) # the father of the child and the level to reach root
+                    tree(node, child, level+1)
+        tree(root, root, 1)
+
+    def kruskal_min_power(self, src, dest):
+        """
+        The complexity in the worst case is O(nb_nodes)
+        But if we have choosen the best root in self.oriented_tree() it can be O(log(nb_nodes)) in average
+        """
+        # This fonction can only be applied to trees (You can execute kruskal before executing this one)
+        if self.tree is None:
+            self.oriented_tree()
+
+        # We will go from src and dest to root
+        def goto_root(node1, node2): # node1 = src, node2 = dest
+            dad1, level1, power1 = self.tree[node1]
+            dad2, level2, power2 = self.tree[node2]
+            if level1 == level2:
+                if node1 == node2:
+                    return [node1, node2], 0
+                path, power3 = goto_root(dad1, dad2)
+                return [node1]+path+[node2], max(power1, power2, power3)
+            if level1 > level2:
+                path, power3 = goto_root(dad1, node2)
+                return [node1]+path, max(power1, power3)
+            if level1 < level2:
+                path, power3 = goto_root(node1, dad2)
+                return path+[node2], max(power2, power3)
+            print("Error in goto_root")
+        
+        return goto_root(src, dest)
+
+
+
+
 
 
 
