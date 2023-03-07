@@ -1,8 +1,4 @@
 import graphviz
-import sys
-
-'''In the following, we assume that when we give a complexity we won't put the multiplicative constant of complexity, 
-for example if we use a function containing 2 for loop of size n we will indicate a complexity O(n) instead of O(2n)'''
 
 class Graph:
     def __init__(self, nodes=[]):
@@ -10,7 +6,7 @@ class Graph:
         self.graph = dict([(n, []) for n in nodes])
         self.nb_nodes = len(nodes)
         self.nb_edges = 0
-        sys.setrecursionlimit(max(self.nb_nodes*10, 1_000))
+        self.tree = None
     
 
     def __str__(self): # complexity : O(nb_edges)
@@ -45,28 +41,12 @@ class Graph:
     
 
     def get_path_with_power(self, src, dest, power): 
-        # complexity : O(nb_nodes + nb_edges log(nb_edges)) in worst case
-        # O(nb_nodes) in best case
-        """
-        We first search if src and dest are in the same connected_component 
-        to restrain the set of node where we have to search 
-        We can now lower the space complexity of power_dict and dist_dict
-        """
-        connected = self.connected_components_set()
-        component = set()
-        for elt in connected:
-            if src in elt:
-                if dest in elt:
-                    component = elt
-                    pass
-                else:
-                    return None
-
-        power_dict = {node:None for node in component}
+        # complexity : O(nb_edges log(nb_edges)) in worst case
+        power_dict = {node:None for node in self.nodes}
         power_dict[src] = 0
-        path = {node:[] for node in component}
+        path = {node:[] for node in self.nodes}
         path[src] = [src]
-        dist_dict = {node:None for node in component}
+        dist_dict = {node:None for node in self.nodes}
         dist_dict[src] = 0
         pile = [(0, src)]
         while pile != []: # Djikstras on dist
@@ -125,31 +105,21 @@ class Graph:
         """
         Should return path, min_power. 
         """
-        # complexity : O(nb_nodes + nb_edges * log(nb_edges)) in worst case O(nb_nodes) in best case
+        # complexity : O(nb_edges log(nb_edges)) in worst case O(nb_nodes) in best case
         """
         The indication in the instruction recommend to use 
-        self.get_path_with_power with a dichotomy research thus doing it nlog(n) times ending with O(nlog(n)(nb_nodes + nb_edges log(nb_edges)))
+        self.get_path_with_power with a dichotomy research thus doing it nlog(n) times ending with O(nlog(n)(nb_edges log(nb_edges)))
 
         We think that modifying Djikstra with the condition 
             max(power_between, power_dict[node]) < power_dict[node]
             rather than dist_between + dist_dict[node] < dist_dict[end_node]
         can end up with the same result 
 
-        And it will be better in complexity because executing Djikstra ending with O(nb_nodes + nb_edges log(nb_edges))
+        And it will be better in complexity because executing Djikstra ending with O(nb_edges log(nb_edges))
         """
-        connected = self.connected_components_set()
-        component = set()
-        for elt in connected:
-            if src in elt:
-                if dest in elt:
-                    component = elt
-                    pass
-                else:
-                    return None
-
-        power_dict = {node:None for node in component}
+        power_dict = {node:None for node in self.nodes}
         power_dict[src] = 0
-        path = {node:[] for node in component}
+        path = {node:[] for node in self.nodes}
         path[src] = [src]
         pile = [(0, src)]
         while pile != []: # Djikstras on max power
@@ -177,114 +147,168 @@ class Graph:
                 if source < destination:
                     # Le premier nombre est la puissance le deuxième est la distance
                     dot.edge(str(source), str(destination), label=f'{power}, {dist}')
-        dot.render(f'doctest-output/{comment}.gv', view=view)
+        dot.render(filename=f'doctest-output/{comment}.gv', cleanup=True, view=view)
 
-    def kruskal_aime(self):
-        """firstly we divide the problem between all the connex parts of the graph (because kruskal algorithm is
-        designed for connex graphs)"""
-        to_treat = self.connected_components_set()
-        result = Graph(self.nodes)
-        for connex_part in to_treat:
-            set_som = [{node} for node in connex_part]
-            '''here we organise the edges by ascending dist'''
-            queue = []
-            for node in connex_part:
-                interm = self.graph[node]
-                for elt in interm:
-                    queue += [(node, elt[0], elt[1], elt[2])]
-            queue = sorted(queue, key=lambda x: x[2])
-            final_vertices = []
-            '''here we apply the principle of kruskal algorithm'''
-            while len(set_som) > 1:
-                vertex = queue[0]
-                queue.pop(0)
-                for i in range(len(set_som)):
-                    for j in range(len(set_som)):
-                        print(vertex)
-                        if i != j and vertex[0] in set_som[i] and vertex[1] in set_som[j] and not set_som[i].intersection(set_som[j]) :
-                            temp1, temp2 = set_som[i], set_som[j]
-                            set_som.pop(max(i, j))
-                            set_som.pop(min(i, j))
-                            set_som.append(temp1.union(temp2))
-                            final_vertices.append(vertex)
-            '''here we add the vertices to the node in order to generate a tree'''
-            for elt in final_vertices:
-                result.add_edge(elt[i] for i in range(len(elt)))
-        return result
-
-    @staticmethod
-    def graph_from_file(filename): # complexity : O(number of line)
+    def kruskal(self):
         """
-        Reads a text file and returns the graph as an object of the Graph class.
-
-        The file should have the following format:
-            The first line of the file is 'n m'
-            The next m lines have 'node1 node2 power_min dist' or 'node1 node2 power_min' (if dist is missing, it will be set to 1 by default)
-            The nodes (node1, node2) should be named 1..n
-            All values are integers.
-
-        Parameters:
-        -----------
-        filename: str
-            The name of the file
-
-        Outputs:
-        -----------
-        G: Graph
-            An object of the class Graph with the graph from file_name.
+        The complexity is O(nb_edges * (log(nb_edges) + nb_nodes))
         """
-        with open(filename) as file:
-            def readline_to_listint():
-                """
-                Read the next line of file, and return this line as a list of integer
 
-                Outputs:
-                -----------
-                listint: list
-                    A list of integer [node1, node2, power_min, (dist)].
-                """
-                listline = file.readline().split()
-                listint = [float(x) if '.' in x else int(x) for x in listline ]
-                return listint
+        root = {node:node for node in self.nodes}
+        A = Graph(self.nodes)
+        vertices_list = [] # this is a list of all the vertices
+        already_added = {node:[] for node in self.nodes}
+        for node1 in self.nodes:
+            for node2, power, dist in self.graph[node1]:
+                if node2 not in already_added[node1]: # making sure each vertices is only appears once
+                    vertices_list.append((power, dist, node1, node2))
+                    already_added[node1].append(node2)
+                    already_added[node2].append(node1)
+        vertices_list.sort() # we sort them O(nb_edges * log(n_edges))
 
-            n, m = readline_to_listint()
-            nodes = [i for i in range(1, n+1)]
-            G = Graph(nodes)
-            for _ in range(m):
-                args = readline_to_listint()
-                G.add_edge(*args)
-                # Grace à l'étoilé, on prend en compte dist qui peut, ou non être présent
-        return G
+        def union(node1, node2): # In the very worst case O(nb_nodes)
+            if node1 == root[node1]: # Merging this root to node2
+                root[node1] = node2
+                return node2
+            if node2 == root[node2]: # Merging this root to node1
+                root[node2] = node1
+                return node1
+            # searching for a root
+            root_node = union(root[node1], root[node2])
+            # making a compression
+            root[node1] = root_node
+            root[node2] = root_node
+            return root_node
+            
+        def search(node): # In the very worst case O(nb_nodes)
+            if node==root[node]:
+                return node
+            # making a compression
+            root_node = search(root[node])
+            root[node] = root_node
+            return root_node
+
+        visited_nodes = {node: False for node in self.nodes}
+        nb_visited = 0
+        i = 0
+        while nb_visited < self.nb_nodes and i < len(vertices_list): # creating the tree in the worst case repeating nb_edges
+            power, dist, node1, node2 = vertices_list[i]
+            i += 1
+            if (search(node1) != search(node2)): # Otherwise it is a cycle
+                A.add_edge(node1, node2, power, dist)
+                union(node1, node2)
+                if not visited_nodes[node1]:
+                    visited_nodes[node1] = True
+                    nb_visited += 1
+                if not visited_nodes[node2]:
+                    visited_nodes[node2] = True
+                    nb_visited += 1
+        return A
+    
+    def oriented_tree(self):
+        """
+        The complexity is O(nb_nodes) we are visiting every nodes only once
+        """
+        # This fonction can only be applied to trees (You can execute kruskal before executing this one)
+
+        # We will choose the root of our tree as the node with the most neighbour
+        root = self.nodes[0]
+        max_neighbour = len(self.graph[root])
+        for node in self.nodes[1:]:
+            if len(self.graph[root]) > max_neighbour:
+                root = node
+                max_neighbour = len(self.graph[node])
+        
+        # defining the unique tree from root
+        self.tree = {node:(node, 0, 0) for node in self.nodes}
+        def tree(dad, node, level):
+            for child in self.graph[node]:
+                child, power_min, dist = child
+                if child != dad:
+                    self.tree[child] = (node, level, power_min) # the father of the child and the level to reach root
+                    tree(node, child, level+1)
+        tree(root, root, 1)
+
+    def kruskal_min_power(self, src, dest):
+        """
+        The complexity in the worst case is O(nb_nodes)
+        But if we have choosen the best root in self.oriented_tree() it can be O(log(nb_nodes)) in average
+        """
+        # This fonction can only be applied to trees (You can execute kruskal before executing this one)
+        if self.tree is None:
+            self.oriented_tree()
+
+        # We will go from src and dest to root
+        def goto_root(node1, node2): # node1 = src, node2 = dest
+            dad1, level1, power1 = self.tree[node1]
+            dad2, level2, power2 = self.tree[node2]
+            if level1 == level2:
+                if node1 == node2:
+                    return [node1, node2], 0
+                path, power3 = goto_root(dad1, dad2)
+                return [node1]+path+[node2], max(power1, power2, power3)
+            if level1 > level2:
+                path, power3 = goto_root(dad1, node2)
+                return [node1]+path, max(power1, power3)
+            if level1 < level2:
+                path, power3 = goto_root(node1, dad2)
+                return path+[node2], max(power2, power3)
+            print("Error in goto_root")
+        
+        return goto_root(src, dest)
 
 
-def kruskal(G):
-    n = G.nb_nodes
-    A = Graph(G.nodes)
-    vertices_list = []
-    for node1 in G.nodes:
-        for node2, power, dist in G.graph[node1]:
-            vertices_list.append((power, dist, node1, node2))
-    visited_nodes = {node: False for node in G.nodes}
-    nb_visited = 0
-    while nb_visited < G.nb_nodes and vertices_list != []:
-        print(vertices_list)
-        data = min(vertices_list)
-        vertices_list.remove(data)
-        power, dist, node1, node2 = data
-        if (not visited_nodes[node1]) and (not visited_nodes[node2]): # Otherwise it is a cycle
-            A.add_edge(node1, node2, power, dist)
-            if not visited_nodes[node1]:
-                visited_nodes[node1] = True
-                nb_visited += 1
-            if not visited_nodes[node2]:
-                visited_nodes[node2] = True
-                nb_visited += 1
-    return A
 
+
+
+
+
+def graph_from_file(filename): # complexity : O(number of line)
+    """
+    Reads a text file and returns the graph as an object of the Graph class.
+
+    The file should have the following format: 
+        The first line of the file is 'n m'
+        The next m lines have 'node1 node2 power_min dist' or 'node1 node2 power_min' (if dist is missing, it will be set to 1 by default)
+        The nodes (node1, node2) should be named 1..n
+        All values are integers.
+
+    Parameters: 
+    -----------
+    filename: str
+        The name of the file
+
+    Outputs: 
+    -----------
+    G: Graph
+        An object of the class Graph with the graph from file_name.
+    """
+    with open(filename) as file:
+        def readline_to_listint():
+            """
+            Read the next line of file, and return this line as a list of integer
+            
+            Outputs: 
+            -----------
+            listint: list
+                A list of integer [node1, node2, power_min, (dist)].
+            """
+            listline = file.readline().split()
+            listint = [float(x) if '.' in x else int(x) for x in listline ]
+            return listint
+
+        n, m = readline_to_listint()
+        nodes = [i for i in range(1, n+1)]
+        G = Graph(nodes)
+        for _ in range(m):
+            args = readline_to_listint()
+            G.add_edge(*args) 
+            # Grace à l'étoilé, on prend en compte dist qui peut, ou non être présent
+    return G
 
 
 if __name__ == "__main__":
-    g = Graph.graph_from_file("input/network.00.in")
+    g = graph_from_file("input/network.04.in")
     g.connected_components()
     g.graph
     g.get_path_with_power(1, 2, 10)
