@@ -238,7 +238,7 @@ class Graph:
 
 
     # execute it only on a graph or the algrithm won't finish
-    def recursive_parc_connex(self, root, rank, already_visited=[]):
+    def recursive_parc_connex(self, root, rank=0, already_visited=[]): # complexity : O(nb_node)
         already_visited = already_visited + [root]
         if len(self.graph[root]) == 1 and rank != 0:
             return [(root, rank)]
@@ -247,10 +247,12 @@ class Graph:
         else:
             result = [(root, rank)]
             for suc in self.graph[root]:
-                if suc not in already_visited:
-                    result += self.recursive_parc_connex(suc, rank + 1, already_visited)
+                if suc[0] not in already_visited:
+                    result += self.recursive_parc_connex(suc[0], rank + 1, already_visited)
         return result
 
+    def calc_pred_log(self):
+        return 0
 
 
     def kruskal_min_power(self, src, dest):
