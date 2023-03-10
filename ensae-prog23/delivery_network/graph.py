@@ -237,7 +237,8 @@ class Graph:
 
     # execute it only on a tree or the algorithm won't finish
     # this function allow to compute the height of each node given a root, it's a simple graph recursive exploration
-    # it also return a dict with the father of each node, the dict need to be initialized with the value of root at None
+    # it also return a dict with the father of each node and the power min of the edges linking theim,
+    # the dict need to be initialized with the value of root at None
     def calc_height_tree(self, root, ancestor=None, rank=0, dict=False):  # complexity : O(nb_node)
         if len(self.graph[root]) == 1 and rank != 0:
             return {root: rank}, dict
@@ -246,13 +247,31 @@ class Graph:
             for suc in self.graph[root]:
                 if suc[0] != ancestor:
                     if dict:
-                        dict[suc[0]] = root
+                        dict[suc[0]] = [(root, suc[1])]
                     result.update(self.calc_height_tree(suc[0], rank=rank + 1, ancestor=root, dict=dict)[0])
         return result, dict
 
-    # given a node and a distance, this function compute the predecessor that has a distance of dist with this node
-    def calc_pred_log(self, node, dist):
-        return 0
+    # given a tree and a dict that contain the father of each node and the power of the edge linking theim,
+    # it compute the minimal power necessary to go from each node to all its 2**i predecessor
+    def calc_pred_log(self, dist):
+        modifying = True
+        i = 0
+        while modifying:
+            modifying = False
+            for keys in dist.keys():
+                if len(dist[keys]) >= i+1:
+                    departure = dist[keys][i]
+                    if departure is not None:
+                        intermediary = dist[departure][i][0]
+                        if len(dist[intermediary]) >= i+1:
+                            if dist[intermediary][i] is not None:
+                                dist[keys].append((dist[intermediary][0], max(dist[intermediary][0], departure[1])))
+                                modifying = True
+                        else:
+                            dist[keys].append(None)
+
+
+
 
     def kruskal_min_power(self, src, dest):
         """
