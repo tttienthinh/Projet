@@ -236,14 +236,20 @@ class Graph:
                     tree(node, child, level+1)
         tree(root, root, 1)
 
-    def recursive_parc(self, root, rank, already_visited=[]):
+
+    # execute it only on a graph or the algrithm won't finish
+    def recursive_parc_connex(self, root, rank, already_visited=[]):
         already_visited = already_visited + [root]
-        if  len(self.graph[root]) == 1 and rank != 0:
+        if len(self.graph[root]) == 1 and rank != 0:
             return [(root, rank)]
-        if  len(self.graph[root]) == 1 and rank == 0:
+        if len(self.graph[root]) == 1 and rank == 0:
             return [(root, rank)]
         else:
-            return 0
+            result = [(root, rank)]
+            for suc in self.graph[root]:
+                if suc not in already_visited:
+                    result += self.recursive_parc_connex(suc, rank + 1, already_visited)
+        return result
 
 
 
