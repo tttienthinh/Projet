@@ -235,19 +235,23 @@ class Graph:
 
         tree(root, root, 1)
 
-    # execute it only on a graph or the algrithm won't finish
-    def recursive_parc_connex(self, root, ancestor=None, rank=0):  # complexity : O(nb_node)
-        print(ancestor)
+    # execute it only on a tree or the algorithm won't finish
+    # this function allow to compute the height of each node given a root, it's a simple graph recursive exploration
+    # it also return a dict with the father of each node, the dict need to be initialized with the value of root at None
+    def calc_height_tree(self, root, ancestor=None, rank=0, dict=False):  # complexity : O(nb_node)
         if len(self.graph[root]) == 1 and rank != 0:
-            return {root: rank}
+            return {root: rank}, dict
         else:
             result = {root: rank}
             for suc in self.graph[root]:
                 if suc[0] != ancestor:
-                    result.update(self.recursive_parc_connex(suc[0], rank=rank + 1, ancestor=root))
-        return result
+                    if dict:
+                        dict[suc[0]] = root
+                    result.update(self.calc_height_tree(suc[0], rank=rank + 1, ancestor=root, dict=dict)[0])
+        return result, dict
 
-    def calc_pred_log(self):
+    # given a node and a distance, this function compute the predecessor that has a distance of dist with this node
+    def calc_pred_log(self, node, dist):
         return 0
 
     def kruskal_min_power(self, src, dest):
