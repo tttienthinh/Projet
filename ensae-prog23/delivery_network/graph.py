@@ -1,4 +1,5 @@
 import graphviz
+from math import log2
 
 
 # in the following, we refer to the complexity found here for the use of basic functions : https://www.python.org
@@ -9,6 +10,7 @@ class Graph:
         self.nb_nodes = len(nodes)
         self.nb_edges = 0
         self.tree = None
+        self.power_2puiss = None
 
     def __str__(self):  # complexity : O(nb_edges)
         """Prints the graph as a list of neighbors for each node (one per line)"""
@@ -225,15 +227,21 @@ class Graph:
 
         # defining the unique tree from root
         self.tree = {node: (node, 0, 0) for node in self.nodes}
+        self.power_2puiss = {node: [] for node in self.nodes}
 
-        def tree(dad, node, level):
+        def tree(ancestor, node, level):
+            *_, power_min = self.tree[node]
+            for i in range(int(log2(level))):
+                self.power_2puiss[node].append((ancestor[i], power_min))
+                power_min = max(power_min, self.power_2puiss[ancestor[i]][i][1])
+            self.power_2puiss[node].append((ancestor[int(log2(level))], power_min))
             for child in self.graph[node]:
                 child, power_min, dist = child
-                if child != dad:
-                    self.tree[child] = (node, level, power_min)  # the father of the child and the level to reach root
-                    tree(node, child, level + 1)
-
-        tree(root, root, 1)
+                if child != ancestor[0]:
+                    # the father of the child and the level to reach root
+                    self.tree[child] = (node, level, power_min)
+                    tree([node] + ancestor, child, level + 1)
+        tree([root], root, 1)
 
     # execute it only on a tree or the algorithm won't finish
     # this function allow to compute the height of each node given a root, it's a simple graph recursive exploration
@@ -297,6 +305,44 @@ class Graph:
             if level1 < level2:
                 path, power3 = goto_root(node1, dad2)
                 return path + [node2], max(power2, power3)
+            print("Error in goto_root")
+
+        return goto_root(src, dest)
+    
+    def kruskal_2puiss_min_power(self, src, dest):
+        """
+        The complexity in the worst case is O(nb_nodes)
+        But if we have choosen the best root in self.oriented_tree() it can be O(log(nb_nodes)) in average
+        """
+        # This fonction can only be applied to trees (You can execute kruskal before executing this one)
+        if self.tree is None:
+            self.oriented_tree()
+
+        # We will go from src and dest to root
+        def goto_root(node1, node2):  # node1 = src, node2 = dest
+            dad1, level1, power1 = self.tree[node1]
+            dad2, level2, power2 = self.tree[node2]
+            if level1 > level2: # Just to sort them
+                return goto_root(node2, node1)
+            if level1 < level2:
+                i = int(log2(level2-level1))
+                print(node2, i)
+                ancestor_i, puissance_i = self.power_2puiss[node2][i]
+                power3 = goto_root(node1, ancestor_i)
+                return max(ancestor_i, power3)
+            if level1 == level2:
+                if node1 == node2:
+                    return 0
+                if dad1 == dad2:
+                    return max(power1, power2)
+                for i in range(log2(level1)+1):
+                    if self.power_2puiss[node1][i][0] == self.power_2puiss[node2][i][0]:
+                        ancestor1_i, power1_i = self.power_2puiss[node1][i-1]
+                        ancestor2_i, power2_i = self.power_2puiss[node2][i-1]
+                        return max(power1_i, power2_i, goto_root(ancestor1_i, ancestor2_i))
+                    ancestor1_i, power1_i = self.power_2puiss[node1][log2(level1)]
+                    ancestor2_i, power2_i = self.power_2puiss[node2][log2(level1)]
+                    return max(power1_i, power2_i, goto_root(ancestor1_i, ancestor2_i))
             print("Error in goto_root")
 
         return goto_root(src, dest)
