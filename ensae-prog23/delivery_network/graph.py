@@ -102,7 +102,7 @@ class Graph:
         The result should be a set of frozensets (one per component), 
         For instance, for network01.in: {frozenset({1, 2, 3}), frozenset({4, 5, 6, 7})}
         """
-        return set(map(frozenset, self.connected_components()))
+        return set(maap(frozenset, self.connected_components()))
 
     def min_power(self, src, dest):
         """
@@ -230,18 +230,21 @@ class Graph:
         self.power_2puiss = {node: [] for node in self.nodes}
 
         def tree(ancestor, node, level):
-            *_, power_min = self.tree[node]
-            for i in range(int(log2(level))):
-                self.power_2puiss[node].append((ancestor[i], power_min))
-                power_min = max(power_min, self.power_2puiss[ancestor[i]][i][1])
-            self.power_2puiss[node].append((ancestor[int(log2(level))], power_min))
             for child in self.graph[node]:
                 child, power_min, dist = child
-                if child != ancestor[0]:
+                if child != ancestor[-2]:
+                    power = power_min
+                    for i in range(int(log2(level))):
+                        dist = int(2**i)
+                        ancestor_dist = ancestor[-dist]
+                        self.power_2puiss[child].append((ancestor_dist, power))
+                        power = max(power, self.power_2puiss[ancestor_dist][i][1])
+                    dist = int(2**int(log2(level)))
+                    self.power_2puiss[child].append((ancestor[-dist], power))
                     # the father of the child and the level to reach root
                     self.tree[child] = (node, level, power_min)
-                    tree([node] + ancestor, child, level + 1)
-        tree([root], root, 1)
+                    tree(ancestor+[child], child, level + 1)
+        tree([None, root], root, 1)
 
     # execute it only on a tree or the algorithm won't finish
     # this function allow to compute the height of each node given a root, it's a simple graph recursive exploration
@@ -326,22 +329,22 @@ class Graph:
                 return goto_root(node2, node1)
             if level1 < level2:
                 i = int(log2(level2-level1))
-                print(node2, i)
                 ancestor_i, puissance_i = self.power_2puiss[node2][i]
                 power3 = goto_root(node1, ancestor_i)
-                return max(ancestor_i, power3)
+                return max(puissance_i, power3)
             if level1 == level2:
                 if node1 == node2:
                     return 0
                 if dad1 == dad2:
                     return max(power1, power2)
-                for i in range(log2(level1)+1):
+                for i in range(int(log2(level1)+1)):
                     if self.power_2puiss[node1][i][0] == self.power_2puiss[node2][i][0]:
                         ancestor1_i, power1_i = self.power_2puiss[node1][i-1]
                         ancestor2_i, power2_i = self.power_2puiss[node2][i-1]
                         return max(power1_i, power2_i, goto_root(ancestor1_i, ancestor2_i))
-                    ancestor1_i, power1_i = self.power_2puiss[node1][log2(level1)]
-                    ancestor2_i, power2_i = self.power_2puiss[node2][log2(level1)]
+                    dist = int(log2(level1))
+                    ancestor1_i, power1_i = self.power_2puiss[node1][dist]
+                    ancestor2_i, power2_i = self.power_2puiss[node2][dist]
                     return max(power1_i, power2_i, goto_root(ancestor1_i, ancestor2_i))
             print("Error in goto_root")
 

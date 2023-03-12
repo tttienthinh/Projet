@@ -1,13 +1,13 @@
 from graph import Graph, graph_from_file
 import graphviz
 
-test = graph_from_file("input/network.1.in")
+test = graph_from_file("input/network.00.in")
 a = test.kruskal()
 print(a.calc_height_tree(root=3, dict={3:None}))
 a.oriented_tree()
 print(a.tree)
 print("this is power_2puis", a.power_2puiss)
-print(a.kruskal_2puiss_min_power(6, 11))
+print(a.kruskal_2puiss_min_power(1, 3))
 
 """
 data_path = "input/"
