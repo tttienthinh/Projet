@@ -39,15 +39,15 @@ for i, t in enumerate(times):
     print(f"Pour éxecuter routes.{i+1}.in cela prendrait : {round(t, 2)} s  soit {round(t/60)}min")
 
 """
-Pour éxecuter routes.1.in cela prendrait : 0.0 s 
-Pour éxecuter routes.2.in cela prendrait : 2.13 s 
-Pour éxecuter routes.3.in cela prendrait : 6.67 s 
-Pour éxecuter routes.4.in cela prendrait : 8.31 s 
-Pour éxecuter routes.5.in cela prendrait : 5.71 s 
-Pour éxecuter routes.6.in cela prendrait : 10.75 s 
-Pour éxecuter routes.7.in cela prendrait : 10.82 s 
-Pour éxecuter routes.8.in cela prendrait : 10.66 s 
-Pour éxecuter routes.9.in cela prendrait : 10.11 s
+Pour éxecuter routes.1.in cela prendrait : 0.0 s  soit 0min
+Pour éxecuter routes.2.in cela prendrait : 2.14 s  soit 0min
+Pour éxecuter routes.3.in cela prendrait : 64.37 s  soit 1min
+Pour éxecuter routes.4.in cela prendrait : 60.22 s  soit 1min
+Pour éxecuter routes.5.in cela prendrait : 14.44 s  soit 0min
+Pour éxecuter routes.6.in cela prendrait : 72.83 s  soit 1min
+Pour éxecuter routes.7.in cela prendrait : 70.1 s  soit 1min
+Pour éxecuter routes.8.in cela prendrait : 56.14 s  soit 1min
+Pour éxecuter routes.9.in cela prendrait : 63.25 s  soit 1min
 
 Comparé aux estimations précédentes test_s2q10.py
 On est vraiment plus efficace, en calculant l'arbre couvrant minimal et en l'orientant
