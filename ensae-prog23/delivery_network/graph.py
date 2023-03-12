@@ -158,8 +158,6 @@ class Graph:
         """
         The complexity is O(nb_edges * (log(nb_edges) + nb_nodes))
         """
-
-        root = {node: node for node in self.nodes}
         A = Graph(self.nodes)
         vertices_list = []  # this is a list of all the vertices
         already_added = {node: [] for node in self.nodes}
@@ -171,44 +169,24 @@ class Graph:
                     already_added[node2].append((node1, power, dist))
         vertices_list.sort()  # we sort them O(nb_edges * log(n_edges))
 
+        root = {node: node for node in self.nodes} # represent the union find
         def union(node1, node2):  # In the very worst case O(nb_nodes)
-            if node1 == root[node1]:  # Merging this root to node2
-                root[node1] = node2
-                return node2
-            if node2 == root[node2]:  # Merging this root to node1
-                root[node2] = node1
-                return node1
-            # searching for a root
-            root_node = union(root[node1], root[node2])
             # making a compression
-            root[node1] = root_node
-            root[node2] = root_node
-            return root_node
+            root[find(node1)] = find(node2)
 
-        def search(node):  # In the very worst case O(nb_nodes)
-            if node == root[node]:
-                return node
-            # making a compression
-            root_node = search(root[node])
-            root[node] = root_node
-            return root_node
+        def find(node):  # In the very worst case O(nb_nodes)
+            if node != root[node]:
+                root[node] = find(root[node]) # making a compression
+            return root[node]
 
-        visited_nodes = {node: False for node in self.nodes}
-        nb_visited = 0
         i = 0
-        while nb_visited < self.nb_nodes and i < len(vertices_list):  # creating the tree in the worst case repeating
+        while A.nb_edges < self.nb_nodes-1 and i < len(vertices_list):  # creating the tree in the worst case repeating
             # nb_edges
             power, dist, node1, node2 = vertices_list[i]
             i += 1
-            if (search(node1) != search(node2)):  # Otherwise, it is a cycle
+            if (find(node1) != find(node2)):  # Otherwise, it is a cycle
                 A.add_edge(node1, node2, power, dist)
                 union(node1, node2)
-                if not visited_nodes[node1]:
-                    visited_nodes[node1] = True
-                    nb_visited += 1
-                if not visited_nodes[node2]:
-                    visited_nodes[node2] = True
-                    nb_visited += 1
         return A
 
     def oriented_tree(self):
