@@ -9,8 +9,10 @@ class Graph:
         self.graph = dict([(n, []) for n in nodes])
         self.nb_nodes = len(nodes)
         self.nb_edges = 0
-        self.tree = None
-        self.power_2puiss = None
+        self.tree = None # a dict that contain for each node n a tuple (father f, height of n, power between n and f).
+        # We put None if that's not a Tree
+        self.power_2puiss = None # if the graph is a tree, this attribute contains a dict, for each node we have :
+        # n : [2**i predecessor] for i=0 to int(log_2(height(n)))
 
     def __str__(self):  # complexity : O(nb_edges)
         """Prints the graph as a list of neighbors for each node (one per line)"""
@@ -43,9 +45,19 @@ class Graph:
 
     def get_path_with_power(self, src, dest, power):
         """
-        complexité à vérifier
+        Compute if a path exists between two nodes for a determinate maximal power, return None if does not exits
+        it return a minimal distance path if it exists
+
+        Parameters:
+        -----------
+        src: Any
+            the departure node
+        dest: Any
+            the arrival node
+        power: numeric (int or float)
+            Maximum power for the route between the two nodes
         """
-        # complexity : O(nb_edges log(nb_edges) + nb_node)
+        # complexity : O(nb_nodes log(nb_nodes) + nb_edges)
         power_dict = {node: None for node in self.nodes}
         power_dict[src] = 0
         path = {node: [] for node in self.nodes}
@@ -54,8 +66,8 @@ class Graph:
         dist_dict[src] = 0
         pile = [(0, src)]
         while pile:  # Djikstras on dist
-            """in this part we use the Djikstra algorithm on the dist with the condition on power
-            It is like removing all edges with too big power required
+            """
+            In this part we use the djikstra algorithm, and exclude the edges with a too big power
             """
             node_dist, node = min(pile)
             pile.remove((node_dist, node))
@@ -108,7 +120,7 @@ class Graph:
         """
         Should return path, min_power. 
         """
-        # complexity : à vérifier
+        # complexity : O(nb_nodes log(nb_nodes) + nb_edges)
         """
         The indication in the instruction recommend to use 
         self.get_path_with_power with a dichotomy research thus doing it nlog(n) times ending with O(nlog(n)(nb_edges log(nb_edges)))
@@ -144,6 +156,15 @@ class Graph:
 
     def to_graphviz(self, comment="Graphe", view=True):  # we do not calculate the complexity because we did'nt find the
         # complexity of graphviz functions
+        """
+
+        Args:
+            comment: title of the generated file
+            view: True if we want to display the result or not
+
+        Returns: None
+
+        """
         dot = graphviz.Graph(comment=comment)
         for node in self.nodes:
             dot.node(f"{node}", str(node))
@@ -170,9 +191,6 @@ class Graph:
         vertices_list.sort()  # we sort them O(nb_edges * log(n_edges))
 
         root = {node: node for node in self.nodes} # represent the union find
-        def union(node1, node2):  # In the very worst case O(nb_nodes)
-            # making a compression
-            root[find(node1)] = find(node2)
 
         def find(node):  # In the very worst case O(nb_nodes)
             if node != root[node]:
@@ -181,17 +199,21 @@ class Graph:
 
         i = 0
         while A.nb_edges < self.nb_nodes-1 and i < len(vertices_list):  # creating the tree in the worst case repeating
-            # nb_edges
+            # nb_edges and in the best case nb_nodes-1
             power, dist, node1, node2 = vertices_list[i]
             i += 1
-            if (find(node1) != find(node2)):  # Otherwise, it is a cycle
+            dad1 = find(node1) # O(log(nb_nodes)) thanks to compression
+            dad2 = find(node2)
+            if dad1 != dad2:  # Otherwise, it is a cycle
                 A.add_edge(node1, node2, power, dist)
-                union(node1, node2)
+                root[dad1] = dad2 # Union
         return A
 
     def oriented_tree(self):
         """
-        The complexity is O(nb_nodes) we are visiting every nodes only once
+        The complexity is O(nb_nodes) (for loop) + Complexity of the function tree
+        This lead to a final complexity of : O(nb_nodes * log(height)) which is always better or equal to
+        O(nb_nodes * log(nb_nodes))
         """
         # This function can only be applied to trees (You can execute kruskal before executing this one)
 
@@ -208,13 +230,20 @@ class Graph:
         self.power_2puiss = {node: [] for node in self.nodes}
 
         def tree(ancestor, node, level):
-            for child in self.graph[node]:
-                child, power_min, dist = child
-                if child != ancestor[-2]:
+            """
+            This function is making orientating our tree, to give it a root
+            And also give the power_min to reach the ancestor at 2^i
+            Complexity is in O(nb_nodes * log(height))
+            Args:
+                ancestor: a list of ancestors
+                node: the actual node that we are studying
+                level: his level (hauteur dans l'arbre)
+            """
+            for child, power_min, dist in self.graph[node]:
+                if child != ancestor[-2]: # We only visit children
                     power = power_min
                     for i in range(int(log2(level))):
-                        dist = int(2**i)
-                        ancestor_dist = ancestor[-dist]
+                        ancestor_dist = ancestor[-int(2**i)]
                         self.power_2puiss[child].append((ancestor_dist, power))
                         power = max(power, self.power_2puiss[ancestor_dist][i][1])
                     dist = int(2**int(log2(level)))
@@ -228,36 +257,11 @@ class Graph:
     # this function allow to compute the height of each node given a root, it's a simple graph recursive exploration
     # it also return a dict with the father of each node and the power min of the edges linking theim,
     # the dict need to be initialized with the value of root at None
-    def calc_height_tree(self, root, ancestor=None, rank=0, dict=False):  # complexity : O(nb_node)
-        if len(self.graph[root]) == 1 and rank != 0:
-            return {root: rank}, dict
-        else:
-            result = {root: rank}
-            for suc in self.graph[root]:
-                if suc[0] != ancestor:
-                    if dict:
-                        dict[suc[0]] = [(root, suc[1])]
-                    result.update(self.calc_height_tree(suc[0], rank=rank + 1, ancestor=root, dict=dict)[0])
-        return result, dict
+
 
     # given a tree and a dict that contain the father of each node and the power of the edge linking theim,
     # it compute the minimal power necessary to go from each node to all its 2**i predecessor
-    def calc_pred_log(self, dist):
-        modifying = True
-        i = 0
-        while modifying:
-            modifying = False
-            for keys in dist.keys():
-                if len(dist[keys]) >= i+1:
-                    departure = dist[keys][i]
-                    if departure is not None:
-                        intermediary = dist[departure][i][0]
-                        if len(dist[intermediary]) >= i+1:
-                            if dist[intermediary][i] is not None:
-                                dist[keys].append((dist[intermediary][0], max(dist[intermediary][0], departure[1])))
-                                modifying = True
-                        else:
-                            dist[keys].append(None)
+
 
 
 
