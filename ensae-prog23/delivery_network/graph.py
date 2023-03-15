@@ -1,6 +1,7 @@
 import graphviz
 from math import log2
-
+import osmnx
+import numpy as np
 
 # in the following, we refer to the complexity found here for the use of basic functions : https://www.python.org
 class Graph:
@@ -334,6 +335,22 @@ class Graph:
                 
         return goto_root(src, dest)
 
+    @staticmethod
+    def from_gpd_to_graph(dataframe, nodes):
+        dataframe = dataframe.reset_index()
+        graph = Graph(list(nodes.index))
+        for index, row in dataframe.iterrows():
+            print(row["maxspeed"])
+            try:
+                if type(row["maxspeed"]) == str:
+                    graph.add_edge(row["u"], row["v"], int(row["maxspeed"]), row["length"])
+                elif type(row["maxspeed"]) == list:
+                    graph.add_edge(row["u"], row["v"], int(row["maxspeed"][0]), row["length"])
+                else:
+                    graph.add_edge(row["u"], row["v"], 50, row["length"])
+            except:
+                graph.add_edge(row["u"], row["v"], 50, row["length"])
+        return graph
 
 def graph_from_file(filename):  # complexity : O(number of line)
     """
