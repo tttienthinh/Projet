@@ -187,7 +187,7 @@ class Graph:
                         dot.edge(str(source), str(destination), label=f'{power}, {dist}', color="dodgerblue")
                     else:
                         dot.edge(str(source), str(destination), label=f'{power}, {dist}')
-        dot.render(filename=f'doctest-output/{comment}.gv', cleanup=True, view=view)
+        dot.render(filename=f'graphviz/{comment}.gv', cleanup=True, view=view)
 
     def kruskal(self):
         """
