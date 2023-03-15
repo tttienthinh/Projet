@@ -19,6 +19,18 @@ class Test_MinimalPower(unittest.TestCase):
         a.oriented_tree()
         self.assertEqual(a.kruskal_min_power(1, 4)[1], 4)
 
+    def test_network2(self):
+        g = graph_from_file("input/network.02.in")
+        a = g.kruskal()
+        a.oriented_tree()
+        self.assertEqual(a.kruskal_min_power(1, 4)[1], 4)
+
+    def test_network3(self):
+        g = graph_from_file("input/network.03.in")
+        a = g.kruskal()
+        a.oriented_tree()
+        self.assertEqual(a.kruskal_min_power(1, 4)[1], 10)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -12,6 +12,11 @@ class Test_Reachability(unittest.TestCase):
         g = graph_from_file("input/network.04.in")
         self.assertEqual(g.get_path_with_power(1, 2, 10), [1, 2])
         self.assertEqual(g.get_path_with_power(1, 2, 11), [1, 4, 3, 2])
+
+    def test_network2(self):
+        g = graph_from_file("input/network.02.in")
+        self.assertEqual(g.get_path_with_power(1, 2, 10), [1, 4, 3, 2])
+        self.assertEqual(g.get_path_with_power(1, 2, 11), [1, 2])
         
 
 if __name__ == '__main__':
