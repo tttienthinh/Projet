@@ -114,7 +114,7 @@ class Graph:
         The result should be a set of frozensets (one per component), 
         For instance, for network01.in: {frozenset({1, 2, 3}), frozenset({4, 5, 6, 7})}
         """
-        return set(maap(frozenset, self.connected_components()))
+        return set(map(frozenset, self.connected_components()))
 
     def min_power(self, src, dest):
         """
@@ -154,25 +154,39 @@ class Graph:
 
         return None, None
 
-    def to_graphviz(self, comment="Graphe", view=True):  # we do not calculate the complexity because we did'nt find the
+    def to_graphviz(self, comment="Graphe", view=True, src=None, dest=None):  # we do not calculate the complexity because we did'nt find the
         # complexity of graphviz functions
         """
-
         Args:
             comment: title of the generated file
             view: True if we want to display the result or not
-
         Returns: None
-
         """
+        path = []
+        if src is not None and dest is not None:
+            path, _ = self.min_power(src, dest)
+            if path is None:
+                path = []
+        path_couple = [{path[i], path[i+1]} for i in range(len(path)-1)]
+        
         dot = graphviz.Graph(comment=comment)
         for node in self.nodes:
-            dot.node(f"{node}", str(node))
+            if node == src:
+                dot.node(f"{node}", str(node), color="forestgreen")
+            elif node == dest:
+                dot.node(f"{node}", str(node), color="firebrick")
+            elif node in path:
+                dot.node(f"{node}", str(node), color="dodgerblue")
+            else:
+                dot.node(f"{node}", str(node))
         for source, destinations in self.graph.items():
             for destination, power, dist in destinations:
                 if source < destination:
                     # Le premier nombre est la puissance le deuxième est la distance
-                    dot.edge(str(source), str(destination), label=f'{power}, {dist}')
+                    if {source, destination} in path_couple:
+                        dot.edge(str(source), str(destination), label=f'{power}, {dist}', color="dodgerblue")
+                    else:
+                        dot.edge(str(source), str(destination), label=f'{power}, {dist}')
         dot.render(filename=f'doctest-output/{comment}.gv', cleanup=True, view=view)
 
     def kruskal(self):
