@@ -1,7 +1,5 @@
 import graphviz
 from math import log2
-import osmnx
-import numpy as np
 
 # in the following, we refer to the complexity found here for the use of basic functions : https://www.python.org
 class Graph:
@@ -338,7 +336,6 @@ class Graph:
         dataframe = dataframe.reset_index()
         graph = Graph(list(nodes.index))
         for index, row in dataframe.iterrows():
-            print(row["maxspeed"])
             try:
                 if type(row["maxspeed"]) == str:
                     graph.add_edge(row["u"], row["v"], int(row["maxspeed"]), row["length"])
