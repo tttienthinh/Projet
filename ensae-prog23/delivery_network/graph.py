@@ -193,6 +193,7 @@ class Graph:
         """
         The complexity is O(nb_edges * (log(nb_edges) + nb_nodes))
         """
+        # Creating a list of vertices_list
         A = Graph(self.nodes)
         vertices_list = []  # this is a list of all the vertices
         already_added = {node: [] for node in self.nodes}
@@ -204,13 +205,14 @@ class Graph:
                     already_added[node2].append((node1, power, dist))
         vertices_list.sort()  # we sort them O(nb_edges * log(n_edges))
 
-        root = {node: node for node in self.nodes} # represent the union find
-
+        # Union Find with compression
+        root = {node: node for node in self.nodes}
         def find(node):  # In the very worst case O(nb_nodes)
             if node != root[node]:
                 root[node] = find(root[node]) # making a compression
             return root[node]
 
+        # Adding edges to tree A
         i = 0
         while A.nb_edges < self.nb_nodes-1 and i < len(vertices_list):  # creating the tree in the worst case repeating
             # nb_edges and in the best case nb_nodes-1
@@ -267,18 +269,6 @@ class Graph:
                     tree(ancestor+[child], child, level + 1)
         tree([None, root], root, 1)
 
-    # execute it only on a tree or the algorithm won't finish
-    # this function allow to compute the height of each node given a root, it's a simple graph recursive exploration
-    # it also return a dict with the father of each node and the power min of the edges linking theim,
-    # the dict need to be initialized with the value of root at None
-
-
-    # given a tree and a dict that contain the father of each node and the power of the edge linking theim,
-    # it compute the minimal power necessary to go from each node to all its 2**i predecessor
-
-
-
-
 
     def kruskal_min_power(self, src, dest):
         """
@@ -293,18 +283,17 @@ class Graph:
         def goto_root(node1, node2):  # node1 = src, node2 = dest
             dad1, level1, power1 = self.tree[node1]
             dad2, level2, power2 = self.tree[node2]
-            if level1 == level2:
+            if level1 == level2: # same height
                 if node1 == node2:
                     return [node1, node2], 0
                 path, power3 = goto_root(dad1, dad2)
                 return [node1] + path + [node2], max(power1, power2, power3)
-            if level1 > level2:
+            if level1 > level2: # different height
                 path, power3 = goto_root(dad1, node2)
                 return [node1] + path, max(power1, power3)
-            if level1 < level2:
+            if level1 < level2: # different height
                 path, power3 = goto_root(node1, dad2)
                 return path + [node2], max(power2, power3)
-            print("Error in goto_root")
 
         return goto_root(src, dest)
     
@@ -323,17 +312,17 @@ class Graph:
             dad2, level2, power2 = self.tree[node2]
             if level1 > level2: # Just to sort them
                 return goto_root(node2, node1)
-            if level1 < level2:
-                i = int(log2(level2-level1))
+            if level1 < level2: # diffenrent height
+                i = int(log2(level2-level1)) # going to nearest ancestor
                 ancestor_i, puissance_i = self.power_2puiss[node2][i]
                 power3 = goto_root(node1, ancestor_i)
                 return max(puissance_i, power3)
-            if level1 == level2:
+            if level1 == level2: # Same height
                 if node1 == node2:
                     return 0
                 if dad1 == dad2:
                     return max(power1, power2)
-                for i in range(int(log2(level1)+1)):
+                for i in range(int(log2(level1)+1)): # going to lower common ancester
                     if self.power_2puiss[node1][i][0] == self.power_2puiss[node2][i][0]:
                         ancestor1_i, power1_i = self.power_2puiss[node1][i-1]
                         ancestor2_i, power2_i = self.power_2puiss[node2][i-1]
@@ -342,8 +331,7 @@ class Graph:
                     ancestor1_i, power1_i = self.power_2puiss[node1][dist]
                     ancestor2_i, power2_i = self.power_2puiss[node2][dist]
                     return max(power1_i, power2_i, goto_root(ancestor1_i, ancestor2_i))
-            print("Error in goto_root")
-
+                
         return goto_root(src, dest)
 
 
