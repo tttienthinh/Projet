@@ -71,15 +71,15 @@ def tout_sous_ensemble(a, routes, trucks, budget): # complexity O(log2^nb_route)
         profit = 0
         for route in sous_ensemble:
             truck = best_truck_for_route(a, route[0], route[1], trucks)
+            if truck is None:
+                return None, None
             profit += route[2]
             budget_restant -= truck[1]
-            if truck is None or budget < 0:
+            if budget < 0:
                 return None, None
             liste_trucks.append(truck)
         return liste_trucks, profit
-
-        
-
+    
     best_profit = 0
     best_liste_truck = []
     best_route = []
@@ -94,13 +94,22 @@ def tout_sous_ensemble(a, routes, trucks, budget): # complexity O(log2^nb_route)
             j += 1
         
         liste_trucks, profit = utilite(sous_ensemble, budget)
-        if profit > best_profit:
+        if profit is not None and profit > best_profit:
             best_profit = profit
             best_liste_truck = liste_trucks
             best_route = sous_ensemble
     return best_profit, best_liste_truck, best_route
         
+def glouton(a, routes, trucks, budget): # O(nb_routes * log(nb_routes))
+    routes_infos = []
+    for src, dest, utilite in routes:
+        power, price = best_truck_for_route(a, src, dest, trucks)
+        if power is not None:
+            routes_infos.append((src, dest, utilite, power, price, utilite-price))
+    
+    routes_infos.sort(key=lambda x: x[-1])
 
+    for src, dest, utilite, power, price, _ in routes_infos
 
 
 
@@ -113,4 +122,7 @@ if __name__ == "__main__":
     a = kruskal_from_file(data_path + file_name)
     routes = route_from_file(data_path + route_name)
     trucks = truck_from_file(data_path + truck_name)
-    print(tout_sous_ensemble(a, routes[:3], trucks, budget=25e9))
+    import time
+    start = time.time()
+    print(tout_sous_ensemble(a, routes[:17], trucks, budget=25e9))
+    print(time.time()-start)
