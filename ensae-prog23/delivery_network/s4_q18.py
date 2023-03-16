@@ -109,7 +109,8 @@ def glouton(a, routes, trucks, budget): # O(nb_routes * log(nb_routes))
     
     routes_infos.sort(key=lambda x: x[-1])
 
-    for src, dest, utilite, power, price, _ in routes_infos
+    for src, dest, utilite, power, price, _ in routes_infos:
+        pass
 
 
 
