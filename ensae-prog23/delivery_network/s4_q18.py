@@ -156,6 +156,7 @@ def random_optimisation(a, routes, trucks, budget, execution_time):
         else:
             break
     start = time.time()
+    print("utilité avant process random :", current_utilitie)
     while time.time() - start <= execution_time: # here start the random iteration to optimise
         temp_utilitie = current_utilitie
         temp_price = current_price
@@ -195,8 +196,8 @@ def random_optimisation(a, routes, trucks, budget, execution_time):
 
 if __name__ == "__main__":
     data_path = "input/"
-    file_name = f"network.10.in"
-    route_name = f"routes.10.in"
+    file_name = f"network.8.in"
+    route_name = f"routes.8.in"
     truck_name = f"trucks.2.in"
     a = kruskal_from_file(data_path + file_name)
     routes = route_from_file(data_path + route_name)
@@ -213,5 +214,5 @@ if __name__ == "__main__":
     #print(time.time()-start)
 
     start = time.time()
-    print(random_optimisation(a, routes, trucks, budget=25e9, execution_time=10)[0])
+    print(random_optimisation(a, routes, trucks, budget=25e9, execution_time=20)[:2])
     print("ceci est le temps d'execution",time.time() - start)
