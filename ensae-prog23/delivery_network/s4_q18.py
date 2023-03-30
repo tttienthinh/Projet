@@ -174,23 +174,23 @@ def random_optimisation(a, routes, trucks, budget, execution_time):
             index = int(random.uniform(0, len(unallocated)-1))
             if index not in to_realocate:
                 to_realocate.append(index)
-            if temp_price + unallocated[index][-1] < budget:
-                temp_price += unallocated[index][-1]
-                temp_utilitie += unallocated[index][2]
-            else:
-                to_realocate.pop(-1)
-                to_realocate.sort(reverse=True)
-                break
-        if temp_utilitie >= utilite: # if this realocation is benefic, we do it
-            utilite = temp_utilitie
-            price = temp_price
+                if temp_price + unallocated[index][-1] < budget:
+                    temp_price += unallocated[index][-1]
+                    temp_utilitie += unallocated[index][2]
+                else:
+                    to_realocate.pop(-1)
+                    to_realocate.sort(reverse=True)
+                    break
+        if temp_utilitie >= current_utilitie: # if this realocation is benefic, we do it
+            current_utilitie = temp_utilitie
+            current_price = temp_price
             for index in to_unallocate:
                 unallocated.append(allocated[index])
                 allocated.pop(index)
             for index in to_realocate:
                 allocated.append(unallocated[index])
                 unallocated.pop(index)
-    return utilite, price, allocated #when the asked execution time is over, we return the result
+    return current_utilitie, current_price, allocated #when the asked execution time is over, we return the result
 
 
 if __name__ == "__main__":
@@ -213,5 +213,5 @@ if __name__ == "__main__":
     #print(time.time()-start)
 
     start = time.time()
-    print(random_optimisation(a, routes, trucks, budget=25e9, execution_time=10)[:1])
-    print(time.time() - start)
+    print(random_optimisation(a, routes, trucks, budget=25e9, execution_time=10)[0])
+    print("ceci est le temps d'execution",time.time() - start)
