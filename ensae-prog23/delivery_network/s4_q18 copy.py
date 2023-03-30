@@ -77,9 +77,9 @@ def tout_sous_ensemble(a, routes, trucks, budget): # complexity O(log2^nb_route)
                 return None, None
             profit += route[2]
             budget_restant -= truck[1]
-            if budget < 0:
+            if budget_restant < 0:
                 return None, None
-            liste_trucks.append(truck)
+            liste_trucks.append(truck[0])
         return liste_trucks, profit
     
     best_profit = 0
@@ -110,7 +110,7 @@ def glouton(a, routes, trucks, budget): # O(nb_routes * log(nb_routes))
             power, price = truck
             routes_infos.append((src, dest, utilite, power, price, utilite/price))
     
-    routes_infos.sort(key=lambda x: x[-1])
+    routes_infos.sort(key=lambda x: x[-1], reverse=True)
 
     best_profit = 0
     best_liste_truck = []
@@ -119,11 +119,11 @@ def glouton(a, routes, trucks, budget): # O(nb_routes * log(nb_routes))
     for src, dest, utilite, power, price, ratio in routes_infos:
         if budget-price < 0:
             breaked = True
-            break
-        budget -= price
-        best_profit += utilite
-        best_liste_truck.append(power)
-        best_route.append((src, dest, utilite))
+        else:
+            budget -= price
+            best_profit += utilite
+            best_liste_truck.append(power)
+            best_route.append((src, dest, utilite))
     if breaked:
         print(f"Avec glouton nous trouvons une utilité de {best_profit} à {ratio*budget} près. Car il reste {budget} €")
     else:
@@ -135,76 +135,26 @@ def glouton(a, routes, trucks, budget): # O(nb_routes * log(nb_routes))
         
 
 
-def random_optimisation(a, routes, trucks, budget, time):
-    # this algorithm is not assured to work in case of little amount of routes
-    allocated = []
-    unallocated = []
-    current_utilitie = 0
-    for src, dest, utilite in routes:
-        truck = best_truck_for_route(a, src, dest, trucks)
-        if truck is not None:
-            power, price = truck
-            unallocated.append((src, dest, utilite, power, price))
-    current_price = 0
-    while current_price <= budget: # We allocate the truck to sature the budget
-        new_price = current_price + unallocated[0][-1]
-        if  new_price <= budget:
-            current_price = new_price
-            current_utilitie += unallocated[0][2]
-            allocated.append(unallocated[0])
-            unallocated.pop(0)
-    start = time.time()
-    while start - time.time() <= time: # here start the random iteration to optimise
-        temp_utilitie = current_utilitie
-        temp_price = current_price
-        nb_to_unallocate = random.uniform(100)
-        to_unallocate = []
-        for i in range(nb_to_unallocate): # we set a list of index to unalocate randomly
-            index = random.uniform(len(allocated))
-            if index not in to_unallocate:
-                to_unallocate.append(index)
-        to_unallocate.sort(reverse=True)
-        for index in to_unallocate: # we calculte how utiliti and cost we loose with this unalocation
-            temp_price -= allocated[index][-1]
-            temp_utilitie -= allocated[index][2]
-        to_realocate = []
-        while temp_price <= budget: # we sature randomly the budget by realocating truck randomly
-            index = random.uniform(len(unallocated))
-            if index not in to_realocate:
-                to_realocate.append(index)
-            if temp_price + unallocated[index][-1] < budget:
-                temp_price += unallocated[index][-1]
-                temp_utilitie += unallocated[index][2]
-            else:
-                to_realocate.pop(-1)
-            to_realocate.sort(reverse=True)
-        if temp_utilitie >= utilite: # if this realocation is benefic, we do it
-            utilite = temp_utilitie
-            price = temp_price
-            for index in to_unallocate:
-                unallocated.append(allocated(index))
-                allocated.pop(index)
-            for index in to_realocate:
-                allocated.append(unallocated(index))
-                unallocated.pop(index)
-    return utilite, price, allocated #when the asked execution time is over, we return the result
-
-
 if __name__ == "__main__":
     data_path = "input/"
-    file_name = f"network.2.in"
-    route_name = f"routes.2.in"
-    truck_name = f"trucks.0.in"
+    file_name = f"network.3.in"
+    route_name = f"routes.3.in"
+    truck_name = f"trucks.1.in"
     a = kruskal_from_file(data_path + file_name)
     routes = route_from_file(data_path + route_name)
     trucks = truck_from_file(data_path + truck_name)
     import time
-    
+    """
     start = time.time()
-    print(tout_sous_ensemble(a, routes[:10], trucks, budget=25e9))
+    best_profit, best_liste_truck, best_route = tout_sous_ensemble(a, routes[:10], trucks, budget=1e6+1)
+    print(best_profit)
+    print(sorted(best_route))
     print(time.time()-start)
-    
+    print()
+    """
     start = time.time()
-    print(glouton(a, routes, routes[:10], trucks, budget=25e9))
-    print(time.time()-start)
+    best_profit, best_liste_truck, best_route = glouton(a, routes, trucks, budget=25e9)
+    print(best_profit)
+    # print(sorted(best_route))
+    print(f"Tout ça en {time.time()-start} sec")
 
