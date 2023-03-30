@@ -135,7 +135,7 @@ def glouton(a, routes, trucks, budget): # O(nb_routes * log(nb_routes))
         
 
 
-def random_optimisation(a, routes, trucks, budget, time):
+def random_optimisation(a, routes, trucks, budget, execution_time):
     # this algorithm is not assured to work in case of little amount of routes
     allocated = []
     unallocated = []
@@ -148,19 +148,21 @@ def random_optimisation(a, routes, trucks, budget, time):
     current_price = 0
     while current_price <= budget: # We allocate the truck to sature the budget
         new_price = current_price + unallocated[0][-1]
-        if  new_price <= budget:
+        if new_price <= budget:
             current_price = new_price
             current_utilitie += unallocated[0][2]
             allocated.append(unallocated[0])
             unallocated.pop(0)
+        else:
+            break
     start = time.time()
-    while start - time.time() <= time: # here start the random iteration to optimise
+    while time.time() - start <= execution_time: # here start the random iteration to optimise
         temp_utilitie = current_utilitie
         temp_price = current_price
-        nb_to_unallocate = random.uniform(100)
+        nb_to_unallocate = int(random.uniform(0, 100))
         to_unallocate = []
         for i in range(nb_to_unallocate): # we set a list of index to unalocate randomly
-            index = random.uniform(len(allocated))
+            index = int(random.uniform(0, len(allocated)-1))
             if index not in to_unallocate:
                 to_unallocate.append(index)
         to_unallocate.sort(reverse=True)
@@ -169,7 +171,7 @@ def random_optimisation(a, routes, trucks, budget, time):
             temp_utilitie -= allocated[index][2]
         to_realocate = []
         while temp_price <= budget: # we sature randomly the budget by realocating truck randomly
-            index = random.uniform(len(unallocated))
+            index = int(random.uniform(0, len(unallocated)-1))
             if index not in to_realocate:
                 to_realocate.append(index)
             if temp_price + unallocated[index][-1] < budget:
@@ -177,34 +179,39 @@ def random_optimisation(a, routes, trucks, budget, time):
                 temp_utilitie += unallocated[index][2]
             else:
                 to_realocate.pop(-1)
-            to_realocate.sort(reverse=True)
+                to_realocate.sort(reverse=True)
+                break
         if temp_utilitie >= utilite: # if this realocation is benefic, we do it
             utilite = temp_utilitie
             price = temp_price
             for index in to_unallocate:
-                unallocated.append(allocated(index))
+                unallocated.append(allocated[index])
                 allocated.pop(index)
             for index in to_realocate:
-                allocated.append(unallocated(index))
+                allocated.append(unallocated[index])
                 unallocated.pop(index)
     return utilite, price, allocated #when the asked execution time is over, we return the result
 
 
 if __name__ == "__main__":
     data_path = "input/"
-    file_name = f"network.2.in"
-    route_name = f"routes.2.in"
-    truck_name = f"trucks.0.in"
+    file_name = f"network.10.in"
+    route_name = f"routes.10.in"
+    truck_name = f"trucks.2.in"
     a = kruskal_from_file(data_path + file_name)
     routes = route_from_file(data_path + route_name)
     trucks = truck_from_file(data_path + truck_name)
     import time
-    
-    start = time.time()
-    print(tout_sous_ensemble(a, routes[:10], trucks, budget=25e9))
-    print(time.time()-start)
-    
-    start = time.time()
-    print(glouton(a, routes, routes[:10], trucks, budget=25e9))
-    print(time.time()-start)
 
+
+    #start = time.time()
+    #print(tout_sous_ensemble(a, routes[:10], trucks, budget=25e9))
+    #print(time.time()-start)
+    
+    #start = time.time()
+    #print(glouton(a, routes, routes[:10], trucks, budget=25e9))
+    #print(time.time()-start)
+
+    start = time.time()
+    print(random_optimisation(a, routes, trucks, budget=25e9, execution_time=10)[:1])
+    print(time.time() - start)
