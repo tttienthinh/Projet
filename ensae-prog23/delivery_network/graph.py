@@ -338,13 +338,15 @@ class Graph:
         for index, row in dataframe.iterrows():
             try:
                 if type(row["maxspeed"]) == str:
-                    graph.add_edge(row["u"], row["v"], int(row["maxspeed"]), row["length"])
+                    power_min = int(row["maxspeed"])
                 elif type(row["maxspeed"]) == list:
-                    graph.add_edge(row["u"], row["v"], int(row["maxspeed"][0]), row["length"])
+                    power_min = int(row["maxspeed"][0])
                 else:
-                    graph.add_edge(row["u"], row["v"], 50, row["length"])
+                    power_min = 50
             except:
-                graph.add_edge(row["u"], row["v"], 50, row["length"])
+                power_min = 50
+            graph.nb_edges += 1
+            graph.graph[row["u"]].append((row["v"], power_min, row["length"]))
         return graph
 
 def graph_from_file(filename):  # complexity : O(number of line)
