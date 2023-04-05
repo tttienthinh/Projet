@@ -115,22 +115,22 @@ def glouton(a, routes, trucks, budget): # O(nb_routes * log(nb_routes))
     best_profit = 0
     best_liste_truck = []
     best_route = []
-    ratio_non_utilise = None
+    best_possible = None
     route_non_utilise = []
     for src, dest, utilite, power, price, ratio in routes_infos:
         if budget-price < 0:
             route_non_utilise.append((src, dest, utilite))
-            if ratio_non_utilise is None:
-                ratio_non_utilise = ratio
+            if best_possible is None:
+                best_possible = ratio*budget + best_profit
         else:
             budget -= price
             best_profit += utilite
             best_liste_truck.append(power)
             best_route.append((src, dest, utilite))
-    if ratio_non_utilise is None:
+    if best_possible is None:
         print(f"Avec glouton nous trouvons une utilité de {best_profit} ce qui est le meilleur car plus assez de route même si il reste {budget} €")
     else:
-        print(f"Avec glouton nous trouvons une utilité de {best_profit} à {ratio_non_utilise*budget} près. Car il reste {budget} €")
+        print(f"Avec glouton nous trouvons une utilité de {best_profit} à {best_possible-best_profit} près. Car il reste {budget} €")
     return best_profit, best_liste_truck, best_route, route_non_utilise, budget
     
         
@@ -275,6 +275,17 @@ if __name__ == "__main__":
     #print(time.time()-start)
 
     start = time.time()
-    print(random_optimisation_gready_init(a, routes, trucks, budget=25e9, execution_time=120)[:2])
+    with open("output_s4/s4_glouton_routes8_trucks2.in", "w") as file:
+        """
+        # greedy
+        current_utilitie, current_price, allocated = random_optimisation_gready_init(a, routes, trucks, budget=25e9, execution_time=20)
+        """
+        # glouton
+        current_utilitie, _, allocated, _, budget = glouton(a, routes, trucks, budget=25e9)
+        current_price = 25e9-budget
+        allocated.sort()
+        file.write("budget utilisé = " + str(current_price) + " Utilité trouvée = " + str(current_utilitie) + "\n")
+        file.write("\n".join([" ".join(map(str, map(int, x[:4]))) for x in allocated]))
+    
     print("ceci est le temps d'execution",time.time() - start)
 
